@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Laboratorium3</string>
+    <string name="photo">Zrób zdjęcie</string>
+    <string name="action_photo">Zrob zdjecie</string>
+    <string name="action_contacts">Wyszukaj kontakt</string>
+    <string name="action_sms">Wyslij SMS</string>
+    <string name="access_denied">Dostęp wymagany do wykonania tej akcji</string>
+    <string name="button_call">Zadzwoń</string>
+</resources>
