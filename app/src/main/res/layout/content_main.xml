@@ -9,7 +9,7 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:orientation="vertical"
-    tools:context="pl.edu.pwr.wiz.laboratorium3.MainActivity"
+    tools:context="pl.edu.pwr.wiz.laboratorium2.MainActivity"
     tools:showIn="@layout/activity_main">
 
 </LinearLayout>

@@ -1,4 +1,4 @@
-package pl.edu.pwr.wiz.laboratorium3;
+package pl.edu.pwr.wiz.laboratorium2;
 
 import org.junit.Test;
 

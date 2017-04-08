@@ -1,4 +1,4 @@
-package pl.edu.pwr.wiz.laboratorium3;
+package pl.edu.pwr.wiz.laboratorium2;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("pl.edu.pwr.wiz.laboratorium3", appContext.getPackageName());
+        assertEquals("pl.edu.pwr.wiz.laboratorium2", appContext.getPackageName());
     }
 }
