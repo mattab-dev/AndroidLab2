@@ -1,4 +1,4 @@
-# Projektowanie i programowanie aplikacji na platformę Android - Laboratorium 3
+# Projektowanie i programowanie aplikacji na platformę Android - Laboratorium 2
 **Autor: Remigiusz Samborski**
 
 Celem zajęć będzie stworzenie prostej aplikacji korzystającej pozwalającej na:
