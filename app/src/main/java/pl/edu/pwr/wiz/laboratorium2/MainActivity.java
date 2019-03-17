@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -27,6 +28,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 0;
     private static final int MY_PERMISSIONS_REQUEST_PHONE = 1;
@@ -36,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_IMAGE_CAPTURE = 0;
     private static final int REQUEST_CONTACT_DATA = 1;
+    private static final int REQUEST_LOAD_PHOTO = 2;
 
     private String number;
 
@@ -147,6 +152,20 @@ public class MainActivity extends AppCompatActivity {
 
             /* Dodajemy nowy obrazek do layoutu */
             contentMain.addView(imageView);
+        } else if (requestCode == REQUEST_LOAD_PHOTO && resultCode == RESULT_OK) {
+            ViewGroup contentMain = this.findViewById(R.id.content_main);
+            contentMain.removeAllViews();
+            ImageView view = new ImageView(this);
+            view.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+            try {
+                final Uri imageUri = data.getData();
+                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                view.setImageBitmap(selectedImage);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            contentMain.addView(view);
         } else if (requestCode == REQUEST_CONTACT_DATA && resultCode == RESULT_OK) {
             /* Czyscimy aktualny content */
             ViewGroup contentMain = (ViewGroup) this.findViewById(R.id.content_main);
@@ -251,6 +270,21 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    private boolean loadPhoto() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PICK_FROM_GALLERY);
+        }
+
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, REQUEST_LOAD_PHOTO);
+        return true;
+    }
+
     /* Pobieranie kontaktu */
     private boolean fetchContact() {
         if (ContextCompat.checkSelfPermission(this,
@@ -318,21 +352,6 @@ public class MainActivity extends AppCompatActivity {
         smsEditor.setData(Uri.fromParts("sms", number, null));
         smsEditor.putExtra("sms_body", "Nie dam rady dojechać");
         startActivity(smsEditor);
-        return true;
-    }
-
-    private boolean loadPhoto() {
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    MY_PICK_FROM_GALLERY);
-        }
-
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, MY_PICK_FROM_GALLERY);
         return true;
     }
 }
