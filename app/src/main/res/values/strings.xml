@@ -6,4 +6,7 @@
     <string name="action_sms">Wyslij SMS</string>
     <string name="access_denied">Dostęp wymagany do wykonania tej akcji</string>
     <string name="button_call">Zadzwoń</string>
+    <string name="photoLoader">photoLoader</string>
+    <string name="button_send_sms">Wyślij wiadomość</string>
+    <string name="button_edit_sms">Edytuj wiadomość</string>
 </resources>

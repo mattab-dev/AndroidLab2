@@ -4,6 +4,11 @@
     tools:context="pl.edu.pwr.wiz.laboratorium2.MainActivity">
 
     <item
+        android:id="@+id/photoLoader"
+        android:icon="@drawable/ic_photo_loader"
+        android:title="@string/photoLoader"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_photo"
         android:icon="@drawable/ic_photo"
         android:title="@string/action_photo"

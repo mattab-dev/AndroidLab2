@@ -15,6 +15,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.SmsManager;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_REQUEST_PHONE = 1;
     private static final int MY_PERMISSIONS_REQUEST_CONTACTS = 2;
     private static final int MY_PERMISSIONS_REQUEST_SMS = 3;
+    private static final int MY_PICK_FROM_GALLERY = 4;
 
     private static final int REQUEST_IMAGE_CAPTURE = 0;
     private static final int REQUEST_CONTACT_DATA = 1;
@@ -54,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.photoLoader:
+                return loadPhoto();
             case R.id.action_photo:
                 return takePhoto();
 
@@ -101,6 +105,27 @@ public class MainActivity extends AppCompatActivity {
                 }
                 return;
             }
+
+            case MY_PERMISSIONS_REQUEST_SMS: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Dostęp nadany, mozna wyslac sms
+                    sendSms();
+                } else {
+                    // Dostęp nie udany. Wyświetlamy Toasta
+                    Toast.makeText(getApplicationContext(), R.string.access_denied, Toast.LENGTH_LONG).show();
+                }
+                return;
+            }
+
+            case MY_PICK_FROM_GALLERY: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Dostęp nadany, mozna otworzyc galerie
+                    loadPhoto();
+                } else {
+                    // Dostęp nie udany. Wyświetlamy Toasta
+                    Toast.makeText(getApplicationContext(), R.string.access_denied, Toast.LENGTH_LONG).show();
+                }
+            }
         }
     }
 
@@ -122,18 +147,17 @@ public class MainActivity extends AppCompatActivity {
 
             /* Dodajemy nowy obrazek do layoutu */
             contentMain.addView(imageView);
-        }
-        else if(requestCode == REQUEST_CONTACT_DATA && resultCode == RESULT_OK) {
+        } else if (requestCode == REQUEST_CONTACT_DATA && resultCode == RESULT_OK) {
             /* Czyscimy aktualny content */
             ViewGroup contentMain = (ViewGroup) this.findViewById(R.id.content_main);
             contentMain.removeAllViews();
 
             Uri contactData = data.getData();
-            Cursor c =  managedQuery(contactData, null, null, null, null);
+            Cursor c = managedQuery(contactData, null, null, null, null);
 
             if (c.moveToFirst()) {
-                String id =c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
-                String hasPhone =c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
+                String id = c.getString(c.getColumnIndexOrThrow(ContactsContract.Contacts._ID));
+                String hasPhone = c.getString(c.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER));
 
                 /* Tworzymy pole na nazwę */
                 String name = c.getString(c.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
@@ -149,8 +173,8 @@ public class MainActivity extends AppCompatActivity {
 
                 if (hasPhone.equalsIgnoreCase("1")) {
                     Cursor phones = getContentResolver().query(
-                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
-                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = "+ id,
+                            ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null,
+                            ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = " + id,
                             null, null);
                     phones.moveToFirst();
                     number = phones.getString(phones.getColumnIndex("data1"));
@@ -167,8 +191,14 @@ public class MainActivity extends AppCompatActivity {
 
                     /* Dodajemy przycisk do dzwonienia */
                     Button callBtn = new Button(this);
+                    Button sendSmsBtn = new Button(this);
+                    Button editSmsBtn = new Button(this);
                     callBtn.setText(R.string.button_call);
                     callBtn.setLayoutParams(params);
+                    sendSmsBtn.setText(R.string.button_send_sms);
+                    sendSmsBtn.setLayoutParams(params);
+                    editSmsBtn.setText(R.string.button_edit_sms);
+                    editSmsBtn.setLayoutParams(params);
 
                     /* Obsluga klikniecia w przycisk */
                     callBtn.setOnClickListener(new View.OnClickListener() {
@@ -176,9 +206,23 @@ public class MainActivity extends AppCompatActivity {
                             callNumber();
                         }
                     });
+                    sendSmsBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            sendSms();
+                        }
+                    });
+                    editSmsBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            editSms();
+                        }
+                    });
 
                     /* Dodajemy do layoutu */
                     contentMain.addView(callBtn);
+                    contentMain.addView(sendSmsBtn);
+                    contentMain.addView(editSmsBtn);
                 }
 
             }
@@ -242,6 +286,53 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse("tel:" + number));
         startActivity(intent);
 
+        return true;
+    }
+
+    private boolean sendSms() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.SEND_SMS},
+                    MY_PERMISSIONS_REQUEST_SMS);
+
+            return false;
+        }
+        SmsManager manager = SmsManager.getDefault();
+        manager.sendTextMessage(number, null, "Nie dam rady dojechać", null, null);
+        return true;
+    }
+
+    private boolean editSms() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.SEND_SMS},
+                    MY_PERMISSIONS_REQUEST_SMS);
+
+            return false;
+        }
+        Intent smsEditor = new Intent(Intent.ACTION_VIEW);
+        smsEditor.setData(Uri.fromParts("sms", number, null));
+        smsEditor.putExtra("sms_body", "Nie dam rady dojechać");
+        startActivity(smsEditor);
+        return true;
+    }
+
+    private boolean loadPhoto() {
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PICK_FROM_GALLERY);
+        }
+
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, MY_PICK_FROM_GALLERY);
         return true;
     }
 }
